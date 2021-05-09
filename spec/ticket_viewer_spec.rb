@@ -22,4 +22,10 @@ describe 'TicketViewer' do
 
   # TODO: Testing actual HTTP responses
 
+  describe('paginate') do
+    it 'should return 25 tickets at a time' do
+      expect(@ticket_viewer.all_tickets).to be(nil)
+    end
+  end
+
 end

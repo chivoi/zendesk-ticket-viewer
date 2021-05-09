@@ -1,7 +1,6 @@
 require 'httparty'
 
 class TicketViewer
-
   attr_reader :username, :password, :subdomain
 
   def initialize(username, password, subdomain)
@@ -12,7 +11,7 @@ class TicketViewer
 
   def all_tickets()
     auth = {username: @username, password: @password}
-    tickets = HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json", basic_auth: auth).parsed_response["tickets"]
+    HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json", basic_auth: auth).parsed_response["tickets"]
   end
 
 end
