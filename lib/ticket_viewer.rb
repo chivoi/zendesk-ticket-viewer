@@ -1,4 +1,5 @@
 require 'httparty'
+require 'json'
 
 class TicketViewer
   attr_reader :username, :password, :subdomain
@@ -11,7 +12,9 @@ class TicketViewer
 
   def all_tickets()
     auth = {username: @username, password: @password}
-    HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json", basic_auth: auth).parsed_response["tickets"]
+    response = HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json?page[size]=25", basic_auth: auth).parsed_response
+    has_more = has_more?(response)
+    puts has_more if has_more
   end
 
 end
