@@ -15,4 +15,8 @@ class TicketViewer
     response = HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json?page[size]=25", basic_auth: auth).parsed_response["tickets"]
   end
 
+  def single_ticket(data, requester_id)
+    data.select{|ticket| ticket["requester_id"] == requester_id}
+  end
+
 end

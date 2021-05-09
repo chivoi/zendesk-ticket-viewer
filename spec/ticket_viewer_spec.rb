@@ -23,6 +23,15 @@ describe 'TicketViewer' do
 
   # TODO: Testing actual HTTP responses
 
+  describe('single_ticket') do
+    it 'should return the correct ticket' do
+      data = File.read(File.expand_path("../../test-docs/tickets.json", __FILE__))
+      parsed_data = JSON.parse(data)["tickets"]
+      id = 1
+      ticket = @ticket_viewer.single_ticket(parsed_data, id)
+      expect(ticket[0]["assignee_id"]).to eq(5)
+    end
+  end
 
 
 end
