@@ -23,6 +23,9 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.10.0)
     rspec-support (3.10.2)
+    terminal-table (3.0.0)
+      unicode-display_width (~> 1.1, >= 1.1.1)
+    unicode-display_width (1.7.0)
 
 PLATFORMS
   x86_64-darwin-19
@@ -31,6 +34,7 @@ DEPENDENCIES
   httparty (~> 0.18.1)
   json (~> 2.5)
   rspec (~> 3.10)
+  terminal-table (~> 3.0)
 
 BUNDLED WITH
    2.2.14

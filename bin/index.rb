@@ -20,18 +20,24 @@ sleep(0.3)
 system "clear"
 puts "YOUR TICKETS:"
 
-# print out all tickets
-puts session.get_tickets
+tickets = session.get_tickets
 
-# check if there are more pages
-if response["meta"]["has_more"]
-  puts "\ntype NEXT for next page, PREV for prev page"
-  input = gets.strip.downcase
-  if input == "next"
-    system "clear"
-    puts next_page(response, "next")
-  elsif input == "prev"
-    system "clear"
-    puts next_page(response, "prev")
+# pagination loop
+loop do
+  puts session.display_data(tickets["tickets"])
+
+  if tickets["meta"]["has_more"]
+    puts "\ntype NEXT for next page, PREV for prev page"
+    input = gets.strip.downcase
+    if input == "next"
+      system "clear"
+      tickets = session.turn_page(tickets, "next")
+    elsif input == "prev"
+      system "clear"
+      tickets = session.turn_page(tickets, "prev")
+    end
+  else 
+    puts "THAT'S THE LAST PAGE!"
+    break
   end
 end
