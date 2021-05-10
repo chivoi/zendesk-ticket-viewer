@@ -6,10 +6,12 @@ puts "Enter your email: "
 username = gets.strip
 
 puts "Enter your password: "
-password = gets
+password = gets.strip
 
 puts "Enter your subomain name: "
 subdomain = gets.strip
+
+session = TicketViewer.new(username, password, subdomain)
 
 sleep(0.3)
 puts "Working ..."
@@ -18,7 +20,18 @@ sleep(0.3)
 system "clear"
 puts "YOUR TICKETS:"
 
-session = TicketViewer.new(username, password, subdomain)
+# print out all tickets
+puts session.get_tickets
 
-session.all_tickets()
-
+# check if there are more pages
+if response["meta"]["has_more"]
+  puts "\ntype NEXT for next page, PREV for prev page"
+  input = gets.strip.downcase
+  if input == "next"
+    system "clear"
+    puts next_page(response, "next")
+  elsif input == "prev"
+    system "clear"
+    puts next_page(response, "prev")
+  end
+end
