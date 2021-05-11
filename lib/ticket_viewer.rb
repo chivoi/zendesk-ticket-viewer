@@ -1,14 +1,14 @@
 require 'httparty'
 require 'json'
 require 'terminal-table'
+require 'tty-prompt'
 
 class TicketViewer
   attr_reader :username, :password, :subdomain
 
-  def initialize(username, password, subdomain)
+  def initialize(username, password)
     @username = username
     @password = password
-    @subdomain = subdomain
     @auth = {username: @username, password: @password}
   end
 
@@ -18,19 +18,33 @@ class TicketViewer
   end
 
   def get_tickets()
-    HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json?page[size]=25", basic_auth: @auth).parsed_response
+    HTTParty.get("https://ana4256.zendesk.com/api/v2/tickets.json?page[size]=25", basic_auth: @auth).parsed_response
   end
 
-  def single_ticket(data, requester_id)
-    data.select{|ticket| ticket["requester_id"] == requester_id}
+  def get_single_ticket(data, id)
+    ticket = data.select{|ticket| ticket["id"] == id}
+    return ticket[0]
+  end
+
+  def display_ticket_data(ticket)
+    rows = []
+    rows << ["TICKET # #{ticket["id"]}"]
+    rows << [" ", " "]
+    rows << ["Priority", ticket["priority"]]
+    rows << ["Subject", ticket["subject"]]
+    rows << ["Status", ticket["status"]]
+
+    Terminal::Table.new :rows => rows
   end
 
   def display_data(data)
-    rows = []
-    data.each do |ticket|
-      rows << ["ID: #{ticket["id"]}", "Priority: #{ticket["priority"]}", ticket["subject"], "Status: #{ticket["status"]}" ]
+    choices = []
+    i = 0
+    data["tickets"].each do |ticket|
+      choices << {name: "ID: #{ticket["id"]} / PRIORITY: #{ticket["priority"]} | SUBJECT: #{ticket["subject"]} | STATUS:  #{ticket["status"]}", value: i+=1}
     end
-    Terminal::Table.new :rows => rows
+    choices << {name: "MORE", value: 26}
+    return choices
   end
 
 end
