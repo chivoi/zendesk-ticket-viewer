@@ -1,24 +1,44 @@
 require_relative '../lib/ticket_viewer'
 require_relative '../lib/errors'
 require 'tty-prompt'
+require 'dotenv'
+
+Dotenv.load('.env')
 
 # variables
-notice = Pastel.new.bright_magenta.detach
-prompt = TTY::Prompt.new(active_color: notice)
-pages_prompt = TTY::Prompt.new(active_color: notice)
+programme_start_prompt = TTY::Prompt.new
+prompt = TTY::Prompt.new
+pages_prompt = TTY::Prompt.new
 
 puts "ZENDESK TICKET VIEWER\n"
 
-username = prompt.ask("Enter your email: ") do |q|
-  q.required true
-  q.validate(/^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$/, "Invalid email address")
-  q.modify   :downcase, :strip
+# login logic
+login_choices = [
+  {name: "Default account", value: 1},
+  {name: "My account (input credentials)", value: 2}
+]
+which_account = programme_start_prompt.select("\nLogin with default account or your personal account? ", login_choices, symbols: { marker: "->" })
+case which_account
+when 1
+  # pull details from .env file
+  session = TicketViewer.new(ENV["EMAIL"], subdomain = ENV["SUBDOMAIN"], token = ENV["TOKEN"])
+  tickets = session.get_tickets(session.token_auth)  
+when 2
+  # input user's credentials 
+  username = prompt.ask("Enter your email: ") do |q|
+    q.required true
+    q.validate(/^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$/, "Invalid email address")
+    q.modify   :downcase, :strip
+  end
+  user_subdomain = prompt.ask("Enter your subdomain name: ") do |q|
+    q.required true
+    q.modify :downcase, :strip
+  end
+  pwd = prompt.mask("Enter your password: ")
+  # start a session with password
+  session = TicketViewer.new(username, subdomain: user_subdomain,  password: pwd)
+  tickets = session.get_tickets(session.auth)
 end
-password = prompt.mask("Enter your password: ")
-
-# starting a session
-session = TicketViewer.new(username, password)
-tickets = session.get_tickets
 
 sleep(0.3)
 puts "Working ..."
@@ -26,7 +46,7 @@ sleep(0.3)
 
 # main programme loop
 loop do
-  system "clear"
+  # system "clear"
   puts session.display_data(tickets)
 
   # next and previous pages

@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     diff-lcs (1.4.4)
+    dotenv (2.7.6)
     httparty (0.18.1)
       mime-types (~> 3.0)
       multi_xml (>= 0.5.2)
@@ -44,6 +45,7 @@ PLATFORMS
   x86_64-darwin-19
 
 DEPENDENCIES
+  dotenv (~> 2.7)
   httparty (~> 0.18.1)
   json (~> 2.5)
   rspec (~> 3.10)

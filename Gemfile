@@ -15,3 +15,5 @@ gem "json", "~> 2.5"
 gem "terminal-table", "~> 3.0"
 
 gem "tty-prompt", "~> 0.23.1"
+
+gem "dotenv", "~> 2.7"

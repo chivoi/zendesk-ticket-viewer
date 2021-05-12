@@ -3,12 +3,15 @@ require 'json'
 require 'terminal-table'
 
 class TicketViewer
-  attr_reader :username, :password, :subdomain
+  attr_reader :username, :password, :subdomain, :token
 
-  def initialize(username, password)
+  def initialize(username, subdomain = '', password = '', token = '')
     @username = username
     @password = password
+    @token = token
+    @subdomain = subdomain
     @auth = {username: @username, password: @password}
+    @token_auth = {username: @username, token: @token}
   end
 
   def turn_page(response, requested_page)
@@ -16,8 +19,9 @@ class TicketViewer
     HTTParty.get(requested_page_url, basic_auth: @auth).parsed_response
   end
 
-  def get_tickets()
-    HTTParty.get("https://ana4256.zendesk.com/api/v2/tickets.json?page[size]=25", basic_auth: @auth).parsed_response
+  def get_tickets(auth)
+    basic_auth = auth.key?(:password) ? @auth : @token_auth
+    HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json?page[size]=25", basic_auth: basic_auth).parsed_response
   end
 
   def get_single_ticket(data, id)
