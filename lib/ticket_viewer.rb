@@ -3,25 +3,32 @@ require 'json'
 require 'terminal-table'
 
 class TicketViewer
-  attr_reader :username, :password, :subdomain, :token
+  attr_reader :username, :password, :subdomain, :token, :auth, :token_auth
 
-  def initialize(username, subdomain = '', password = '', token = '')
+  def initialize(username, subdomain, password)
     @username = username
     @password = password
-    @token = token
+    # @token = token
     @subdomain = subdomain
     @auth = {username: @username, password: @password}
-    @token_auth = {username: @username, token: @token}
+    # @token_auth = {username: @username, token: @token}
+  end
+
+  def get_tickets()
+    HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json?page[size]=25", basic_auth: @auth).parsed_response
+  end
+
+  def display_data(data)
+    rows = []
+    data["tickets"].each do |ticket|
+      rows << ["ID: #{ticket["id"]}", "SUBJECT: #{ticket["subject"]}", ticket["status"].capitalize]
+    end
+    Terminal::Table.new :rows => rows
   end
 
   def turn_page(response, requested_page)
     requested_page_url = response["links"]["#{requested_page}"]
     HTTParty.get(requested_page_url, basic_auth: @auth).parsed_response
-  end
-
-  def get_tickets(auth)
-    basic_auth = auth.key?(:password) ? @auth : @token_auth
-    HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json?page[size]=25", basic_auth: basic_auth).parsed_response
   end
 
   def get_single_ticket(data, id)
@@ -38,14 +45,6 @@ class TicketViewer
     rows << ["Priority", ticket["priority"]]
     rows << ["Created at", ticket["created_at"]]
     rows << ["Subject", ticket["subject"]]
-    Terminal::Table.new :rows => rows
-  end
-
-  def display_data(data)
-    rows = []
-    data["tickets"].each do |ticket|
-      rows << ["ID: #{ticket["id"]}", "SUBJECT: #{ticket["subject"]}", ticket["status"].capitalize]
-    end
     Terminal::Table.new :rows => rows
   end
 

@@ -21,8 +21,8 @@ which_account = programme_start_prompt.select("\nLogin with default account or y
 case which_account
 when 1
   # pull details from .env file
-  session = TicketViewer.new(ENV["EMAIL"], subdomain = ENV["SUBDOMAIN"], token = ENV["TOKEN"])
-  tickets = session.get_tickets(session.token_auth)  
+  session = TicketViewer.new(ENV["EMAIL"], ENV["SUBDOMAIN"], ENV["PASSWORD"])
+  tickets = session.get_tickets  
 when 2
   # input user's credentials 
   username = prompt.ask("Enter your email: ") do |q|
@@ -36,8 +36,8 @@ when 2
   end
   pwd = prompt.mask("Enter your password: ")
   # start a session with password
-  session = TicketViewer.new(username, subdomain: user_subdomain,  password: pwd)
-  tickets = session.get_tickets(session.auth)
+  session = TicketViewer.new(username, user_subdomain, pwd)
+  tickets = session.get_tickets()
 end
 
 sleep(0.3)
