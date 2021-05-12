@@ -1,7 +1,6 @@
 require 'httparty'
 require 'json'
 require 'terminal-table'
-require 'tty-prompt'
 
 class TicketViewer
   attr_reader :username, :password, :subdomain
@@ -30,21 +29,20 @@ class TicketViewer
     rows = []
     rows << ["TICKET # #{ticket["id"]}"]
     rows << [" ", " "]
-    rows << ["Priority", ticket["priority"]]
-    rows << ["Subject", ticket["subject"]]
+    rows << ["From", ticket["requester_id"]]
     rows << ["Status", ticket["status"]]
-
+    rows << ["Priority", ticket["priority"]]
+    rows << ["Created at", ticket["created_at"]]
+    rows << ["Subject", ticket["subject"]]
     Terminal::Table.new :rows => rows
   end
 
   def display_data(data)
-    choices = []
-    i = 0
+    rows = []
     data["tickets"].each do |ticket|
-      choices << {name: "ID: #{ticket["id"]} / PRIORITY: #{ticket["priority"]} | SUBJECT: #{ticket["subject"]} | STATUS:  #{ticket["status"]}", value: i+=1}
+      rows << ["ID: #{ticket["id"]}", "SUBJECT: #{ticket["subject"]}", ticket["status"].capitalize]
     end
-    choices << {name: "MORE", value: 26}
-    return choices
+    Terminal::Table.new :rows => rows
   end
 
 end
