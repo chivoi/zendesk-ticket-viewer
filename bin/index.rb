@@ -13,42 +13,44 @@ pages_prompt = TTY::Prompt.new
 puts "ZENDESK TICKET VIEWER\n"
 
 # login logic
-login_choices = [
-  {name: "Default account", value: 1},
-  {name: "My account (input credentials)", value: 2}
-]
-which_account = programme_start_prompt.select("\nLogin with default account or your personal account? ", login_choices, symbols: { marker: "->" })
-case which_account
-when 1
-  # pull details from .env file
-  session = TicketViewer.new(ENV["EMAIL"], ENV["SUBDOMAIN"], ENV["PASSWORD"])
-  tickets = session.get_tickets  
-when 2
-  # input user's credentials 
-  username = prompt.ask("Enter your email: ") do |q|
-    q.required true
-    q.validate :email
-    q.modify   :downcase, :strip
-  end
-  user_subdomain = prompt.ask("Enter your subdomain name: ") do |q|
-    q.required true
-    q.modify :downcase, :strip
-  end
-  pwd = prompt.mask("Enter your password: ")
-  # start a session with password
-  session = TicketViewer.new(username, user_subdomain, pwd)
-  tickets = session.get_tickets()
-end
-
-sleep(0.3)
-puts "Working ..."
-sleep(0.3)
-
-# main programme loop
 begin
+  login_choices = [
+    {name: "Default account", value: 1},
+    {name: "My account (input credentials)", value: 2}
+  ]
+  which_account = programme_start_prompt.select("\nLogin with default account or your personal account? ", login_choices, symbols: { marker: "->" })
+  case which_account
+  when 1
+    # pull details from .env file
+    session = TicketViewer.new(ENV["EMAIL"], ENV["SUBDOMAIN"], ENV["PASSWORD"])
+    tickets = session.get_tickets  
+  when 2
+    # input user's credentials 
+    username = prompt.ask("Enter your email: ") do |q|
+      q.required true
+      q.validate :email
+      q.messages[:valid?] = "Please enter a valid email address. Example: email@test.com"
+      q.modify   :down, :strip
+    end
+    user_subdomain = prompt.ask("Enter your subdomain name: ") do |q|
+      q.required true
+      q.modify :downcase, :strip
+    end
+    pwd = prompt.mask("Enter your password: ")
+    # start a session with password
+    session = TicketViewer.new(username, user_subdomain, pwd)
+    tickets = session.get_tickets()
+  end
+
+  # main programme loop
+
   loop do
-    raise GeneralError if tickets["tickets"].nil?
+    # raise GeneralError if tickets["tickets"].nil?
+    sleep(0.3)
+    puts "Working ..."
+    sleep(0.3)
     # system "clear"
+
     puts session.display_data(tickets)
 
     # next and previous pages
@@ -63,19 +65,15 @@ begin
       
       case answer
       when 1
-        # handling errors in case of invalid input of ticket ID
-        begin
-          ticket_id = prompt.ask("Type in ticket ID: ")
-          ticket = session.get_single_ticket(tickets["tickets"], ticket_id.to_i)
-          if ticket_id.nil? || !ticket_id.scan(/\D/).empty?
-            raise TypeError
-          elsif ticket_id.to_i < tickets["tickets"].first["id"].to_i || ticket_id.to_i > tickets["tickets"].last["id"].to_i
-            raise IDValidationError
-          end
-        rescue => e
-          puts "Got a #{e.class} : #{e.message}"
-        retry
+        ticket_id = prompt.ask("Type in ticket ID: ") do |q|
+          q.required true
+          # validation and error handling for invalid input
+          q.validate(/^\d+$/) # validates just the digits
+          q.messages[:valid?] = "Invalid characters. Ticket ID must be a positive integer (ex. 1, 15, 24)"
+          q.in "#{tickets["tickets"].first["id"].to_i}-#{tickets["tickets"].last["id"].to_i}" # validates the ticket id range
+          q.messages[:range?] = "This Ticket ID is not on this page. Please try a differrent ID."
         end
+        ticket = session.get_single_ticket(tickets["tickets"], ticket_id.to_i)
         system "clear"
         puts session.display_ticket_data(ticket)
         puts ticket["description"]
@@ -120,6 +118,6 @@ begin
       end
     end  
   end
-rescue => e
+rescue GeneralError, AuthorizationError, UnavailableError => e
   puts e.message
 end

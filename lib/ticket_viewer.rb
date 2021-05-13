@@ -13,7 +13,15 @@ class TicketViewer
   end
 
   def get_tickets()
-    HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json?page[size]=25", basic_auth: @auth).parsed_response
+    response = HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json?page[size]=25", basic_auth: @auth)
+    # handling Auth and services not available errors
+    case response.code
+    when 401
+      raise AuthorizationError
+    when 500..526
+      raise UnavailableError
+    end
+    response.parsed_response
   end
 
   def display_data(data)
