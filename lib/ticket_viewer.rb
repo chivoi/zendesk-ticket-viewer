@@ -34,7 +34,7 @@ class TicketViewer
   end
 
   def turn_page(response, requested_page)
-    requested_page_url = response["links"]["#{requested_page}"]
+    requested_page_url = response["links"][requested_page]
     HTTParty.get(requested_page_url, basic_auth: @auth).parsed_response
   end
 

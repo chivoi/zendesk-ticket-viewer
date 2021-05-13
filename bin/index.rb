@@ -3,9 +3,10 @@ require_relative '../lib/errors'
 require 'tty-prompt'
 require 'dotenv'
 
+# load .env file
 Dotenv.load('.env')
 
-# variables
+# prompts
 programme_start_prompt = TTY::Prompt.new
 prompt = TTY::Prompt.new
 pages_prompt = TTY::Prompt.new
@@ -14,35 +15,12 @@ system "clear"
 puts "ZENDESK TICKET VIEWER"
 puts "___"
 
-# login logic
 begin
-  login_choices = [
-    {name: "DEFAULT", value: 1},
-    {name: "MY ACCOUNT (input credentials)", value: 2}
-  ]
-  which_account = programme_start_prompt.select("\nLogin with default account or your personal account? ", login_choices, help: " ")
-  case which_account
-  when 1
-    # pull details from .env file
-    session = TicketViewer.new(ENV["EMAIL"], ENV["SUBDOMAIN"], ENV["PASSWORD"])
-    tickets = session.get_tickets  
-  when 2
-    # input user's credentials 
-    username = prompt.ask("ENTER YOUR EMAIL: ") do |q|
-      q.required true
-      q.validate :email
-      q.messages[:valid?] = "Please enter a valid email address. Example: email@test.com"
-      q.modify   :down, :strip
-    end
-    user_subdomain = prompt.ask("ENTER YOUR SUBDOMAIN NAME: ") do |q|
-      q.required true
-      q.modify :down, :strip
-    end
-    pwd = prompt.mask("ENTER YOUR PASSWORD: ")
-    # start a session with password
-    session = TicketViewer.new(username, user_subdomain, pwd)
-    tickets = session.get_tickets()
-  end
+  # start the programme
+  start_programme = [{name: "START PROGRAMME", value: 1}]
+  start_programme = programme_start_prompt.select("\n", start_programme, help: " ")
+  session = TicketViewer.new(ENV["EMAIL"], ENV["SUBDOMAIN"], ENV["PASSWORD"])
+  tickets = session.get_tickets
 
   # main programme loop
 
@@ -54,7 +32,7 @@ begin
 
     puts session.display_data(tickets)
 
-    # next and previous pages
+    # see if there are more pages
     if tickets["meta"]["has_more"]
       paging_choices = [
         {name: "VIEW A TICKET", value: 1},
@@ -66,6 +44,7 @@ begin
       
       case answer
       when 1
+        # search tickets to view by ID
         ticket_id = prompt.ask("Type in ticket ID: ") do |q|
           q.required true
           # validation and error handling for invalid input
@@ -85,6 +64,7 @@ begin
         go_back = prompt.select("\n ", single_ticket_choices, help: " ")
         case go_back
         when 1
+          # go onto next loop iteration => output all tickets
           next
         when 2
           sleep(0.3)
@@ -92,8 +72,10 @@ begin
           break
         end
       when 2
+        # display next page
         tickets = session.turn_page(tickets, "next")
       when 3
+        # display prev page
         tickets = session.turn_page(tickets, "prev")
       when 4
         sleep(0.3)
@@ -101,12 +83,13 @@ begin
         break
       end
     else
+      # if "prev page" clicked on the first page, clears screen for cleaner UI 
       system "clear" if tickets["tickets"].length < 1
       last_page_choices = [
         {name: "BACK TO PAGE 1", value: 1},
-        # {name: "BACK TO PREVIOUS PAGE", value: 2},
         {name: "QUIT PROGRAM", value: 2}
       ]
+      # if last (or only) page, notifies user and offers to go back or quit
       last_page_answer = prompt.select("\n No more pages beyond this point!", last_page_choices, help: " ")
       case last_page_answer
       when 1
