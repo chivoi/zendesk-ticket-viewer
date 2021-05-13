@@ -118,6 +118,6 @@ begin
       end
     end  
   end
-rescue GeneralError, AuthorizationError, UnavailableError => e
-  puts e.message
+rescue => e
+  puts "Error: #{e.message}"
 end

@@ -14,7 +14,7 @@ class TicketViewer
 
   def get_tickets()
     response = HTTParty.get("https://#{@subdomain}.zendesk.com/api/v2/tickets.json?page[size]=25", basic_auth: @auth)
-    # handling Auth and services not available errors
+    # handling Auth and services not available range errors
     case response.code
     when 401
       raise AuthorizationError
@@ -25,6 +25,7 @@ class TicketViewer
   end
 
   def display_data(data)
+    raise GeneralError if data["tickets"].nil?
     rows = []
     data["tickets"].each do |ticket|
       rows << ["ID: #{ticket["id"]}", "SUBJECT: #{ticket["subject"]}", ticket["status"].capitalize]
