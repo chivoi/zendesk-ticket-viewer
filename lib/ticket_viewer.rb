@@ -3,15 +3,13 @@ require 'json'
 require 'terminal-table'
 
 class TicketViewer
-  attr_reader :username, :password, :subdomain, :token, :auth, :token_auth
+  attr_reader :username, :password, :subdomain, :auth
 
   def initialize(username, subdomain, password)
     @username = username
     @password = password
-    # @token = token
     @subdomain = subdomain
     @auth = {username: @username, password: @password}
-    # @token_auth = {username: @username, token: @token}
   end
 
   def get_tickets()
@@ -38,7 +36,7 @@ class TicketViewer
 
   def display_ticket_data(ticket)
     rows = []
-    rows << ["TICKET # #{ticket["id"]}"]
+    rows << ["TICKET # #{ticket["id"]}", " "]
     rows << [" ", " "]
     rows << ["From", ticket["requester_id"]]
     rows << ["Status", ticket["status"]]
