@@ -45,14 +45,11 @@ class TicketViewer
 
   def display_ticket_data(ticket)
     rows = []
-    rows << ["TICKET # #{ticket["id"]}", " "]
-    rows << [" ", " "]
-    rows << ["From", ticket["requester_id"]]
     rows << ["Status", ticket["status"]]
     rows << ["Priority", ticket["priority"]]
     rows << ["Created at", ticket["created_at"]]
     rows << ["Subject", ticket["subject"]]
-    Terminal::Table.new :rows => rows
+    Terminal::Table.new :title => "TICKET # #{ticket["id"]}", :rows => rows
   end
 
 end

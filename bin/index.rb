@@ -56,7 +56,7 @@ begin
         ticket = session.get_single_ticket(tickets["tickets"], ticket_id.to_i)
         system "clear"
         puts session.display_ticket_data(ticket)
-        puts ticket["description"]
+        puts "\n" + ticket["description"]
         single_ticket_choices = [
           {name: "BACK TO ALL TICKETS", value: 1},
           {name: "QUIT PROGRAM", value: 2}
