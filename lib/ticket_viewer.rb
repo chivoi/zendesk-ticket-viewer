@@ -1,5 +1,4 @@
 require 'httparty'
-require 'json'
 require 'terminal-table'
 
 class TicketViewer
@@ -28,14 +27,14 @@ class TicketViewer
     raise GeneralError if data["tickets"].nil?
     rows = []
     data["tickets"].each do |ticket|
-      rows << ["ID: #{ticket["id"]}", "SUBJECT: #{ticket["subject"]}", ticket["status"].capitalize]
+      rows << [ticket["id"], ticket["subject"].capitalize, ticket["status"].capitalize]
     end
-    Terminal::Table.new :rows => rows
+    Terminal::Table.new :title => "TICKETS", :headings => ["ID", "SUBJECT", "STATUS"], :rows => rows
   end
 
   def turn_page(response, requested_page)
-    requested_page_url = response["links"][requested_page]
-    HTTParty.get(requested_page_url, basic_auth: @auth).parsed_response
+    # requested_page_url = response["links"][requested_page]
+    HTTParty.get(response["links"][requested_page], basic_auth: @auth).parsed_response
   end
 
   def get_single_ticket(data, id)
@@ -44,12 +43,15 @@ class TicketViewer
   end
 
   def display_ticket_data(ticket)
+    created_at = DateTime.parse(ticket["created_at"]).strftime("%d %b %Y, %I:%M%P")
+    priority = ticket["priority"] ? ticket["priority"].capitalize : "-"
+    
     rows = []
-    rows << ["Status", ticket["status"]]
-    rows << ["Priority", ticket["priority"]]
-    rows << ["Created at", ticket["created_at"]]
-    rows << ["Subject", ticket["subject"]]
+    rows << ["Status", ticket["status"].capitalize]
+    rows << ["Priority", priority]
+    rows << ["Created at", created_at]
+    rows << ["Subject", ticket["subject"].capitalize]
+
     Terminal::Table.new :title => "TICKET # #{ticket["id"]}", :rows => rows
   end
-
 end
