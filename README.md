@@ -54,7 +54,7 @@ $ gem install bundler
 $ bundle install
 ```
 
-7. If you are marking this challenge, you have been emailed the `.env` file for this project. Save the file into the *root directory* of the project.
+7. If you are marking this challenge, you have been emailed the `env` file for this project. Save the file into the *root directory* of the project. Rename the file to add the dot in front of the file name (`.env`) to make sure dotenv library can load it properly.
 
 After this, you should be all set ready to go!
 
