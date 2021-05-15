@@ -47,7 +47,7 @@ begin
           q.required true
           # validation and error handling for invalid input
           q.validate(/^\d+$/) # just the digits
-          q.messages[:valid?] = "Invalid characters. Ticket ID must be a positive integer (ex. 1, 15, 24)"
+          q.messages[:valid?] = "Invalid input. Ticket ID must be a positive integer (ex. 1, 15, 24)"
           q.in "#{tickets["tickets"].first["id"].to_i}-#{tickets["tickets"].last["id"].to_i}" # validates the ticket id range
           q.messages[:range?] = "This Ticket ID is not on this page. Please try a differrent ID. Or page."
         end
@@ -96,12 +96,12 @@ begin
       last_page_answer = prompt.select("\n No more pages beyond this point!\n", last_page_choices, help: " ")
       case last_page_answer
       when 1
-         # single ticket view flow
+         # single ticket view flow, last minute bug, this could be refactored
          ticket_id = prompt.ask("Type in ticket ID: ") do |q|
           q.required true
           q.validate(/^\d+$/)
           q.messages[:valid?] = "Invalid characters. Ticket ID must be a positive integer (ex. 1, 15, 24)"
-          q.in "#{tickets["tickets"].first["id"].to_i}-#{tickets["tickets"].last["id"].to_i}" # validates the ticket id range
+          q.in "#{tickets["tickets"].first["id"].to_i}-#{tickets["tickets"].last["id"].to_i}"
           q.messages[:range?] = "This Ticket ID is not on this page. Please try a differrent ID. Or page."
         end
         ticket = session.get_single_ticket(tickets["tickets"], ticket_id.to_i)
@@ -109,7 +109,7 @@ begin
         puts session.display_ticket_data(ticket)
         puts "\n" + ticket["description"]
         single_ticket_choices = [
-          {name: "BACK TO PREVIOUS PAGE", value: 1},
+          {name: "BACK TO ALL TICKETS", value: 1},
           {name: "QUIT PROGRAM", value: 2}
         ]
         go_back = prompt.select(" ", single_ticket_choices, help: " ")
