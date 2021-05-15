@@ -78,17 +78,50 @@ begin
       end
     else
       # if "prev page" clicked on the first page, clears screen for cleaner UI 
-      system "clear" if tickets["tickets"].length < 1
-      last_page_choices = [
-        {name: "BACK TO PAGE 1", value: 1},
-        {name: "QUIT PROGRAM", value: 2}
-      ]
+      if tickets["tickets"].length < 1 
+        system "clear"
+        last_page_choices = [
+          {name: "BACK TO PAGE 1", value: 2},
+          {name: "QUIT PROGRAM", value: 3}
+        ]
+      else
+      # keeping view ticket option for the last page
+        last_page_choices = [
+          {name: "VIEW A TICKET", value: 1},
+          {name: "BACK TO PAGE 1", value: 2},
+          {name: "QUIT PROGRAM", value: 3}
+        ]
+      end
       # if last (or only) page, notifies user and offers to go back or quit
       last_page_answer = prompt.select("\n No more pages beyond this point!\n", last_page_choices, help: " ")
       case last_page_answer
       when 1
-        tickets = session.get_tickets
+         # single ticket view flow
+         ticket_id = prompt.ask("Type in ticket ID: ") do |q|
+          q.required true
+          q.validate(/^\d+$/)
+          q.messages[:valid?] = "Invalid characters. Ticket ID must be a positive integer (ex. 1, 15, 24)"
+          q.in "#{tickets["tickets"].first["id"].to_i}-#{tickets["tickets"].last["id"].to_i}" # validates the ticket id range
+          q.messages[:range?] = "This Ticket ID is not on this page. Please try a differrent ID. Or page."
+        end
+        ticket = session.get_single_ticket(tickets["tickets"], ticket_id.to_i)
+        system "clear"
+        puts session.display_ticket_data(ticket)
+        puts "\n" + ticket["description"]
+        single_ticket_choices = [
+          {name: "BACK TO PREVIOUS PAGE", value: 1},
+          {name: "QUIT PROGRAM", value: 2}
+        ]
+        go_back = prompt.select(" ", single_ticket_choices, help: " ")
+        case go_back
+        when 1
+          next
+        when 2
+          break
+        end
       when 2
+        tickets = session.get_tickets
+      when 3
         break
       end
     end  
